@@ -1,2 +1,1 @@
-# Medical-VQA
-Medical VQA: MixUp helps keep it simple
+# Medical VQA: MixUp helps keep it simple
