@@ -1,0 +1,12 @@
+ruamel.yaml
+easydict
+scipy
+pandas
+numpy
+click
+rich
+pyfiglet
+matplotlib
+wandb
+pytest
+spacy

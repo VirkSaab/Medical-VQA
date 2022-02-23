@@ -1,0 +1,113 @@
+seed: 1234
+n_workers: 4
+project_name: MVQAG
+
+clef_cols:  # Name of the columns of the .txt QA files in ImageCLEF datasets
+  default: ["ID", "Q", "A"]  # Most of the datasets
+  default18: ["S.No", "ID", "Q", "A"] # 2018's datasets
+  test19: ["ID", "Task", "Q", "A"]
+  test20: ["ID", "Q"]
+  test20A: ["ID", "Q", "A"] # test 20 with answers
+  test21: ["ID", "Q"]
+
+#* DATA RELATED SETTINGS
+data:
+  augment: True
+  aug_type: 'manual'  # Will use torchvision.AutoAugment class for `auto`
+  normalize: True
+  mean: [0.485, 0.456, 0.406]  # ImageNet mean
+  std: [0.229, 0.224, 0.225]  # ImageNet std
+  QG: False
+  
+model:  # Model settings
+  qnet_name: GRU # Questions network name
+  vnet_name: VGG16 # Visual network name (VGG16 Without batchnorm)
+
+  vdp: 0.2  # Visual network dropout probability
+  qdp: 0.2  # Questions network dropout probability
+  inp_size: 224  # input size of image model
+  max_len: 12  # Maximum number of tokens in a question.
+  emb_dim: 128  # embeddings dimension for text model.
+  use_SAN: False  # If True, Use Stacked Attention Network (SAN) fusion method
+
+loss:  # Loss settings
+  fn: CrossEntropy
+  smoothing: 0.  # Label smoothing
+  wts: None  # Classes weights (not set)
+
+optm:  # Optimization settings
+    name: SGD  # Name of the optimizer e.g. SGD, Adam, RMSProp, etc.
+    lr: 1e-3  # Learning Rate
+    wd: 5e-4  # Weight Decay
+    mom: 0.9  # SGD's Momentum
+    nesterov: False  # SGD's Nesterov momentum
+    betas: [0.90, 0.99]  # Adam's betas parameter
+    amsgrad: True  # Adam's amsgrad parameter
+
+train:  # Training and validation settings
+  bs: 32  # Batch size
+  n_epochs: 60
+  swa: False  # Stochastic Weight Averaging
+  vqa_mixup: 0.
+  max_train_iters: -1  # -1 means use all data
+  max_val_iters: -1
+
+test:
+ bs: 1
+
+
+task_keywords:  # For questions generation
+  abnormality: ['normal', 'abnormal', 'abnormality', 'abnormalities', 'alarming', 'wrong']
+  modality: ['x-ray', 'mri', 'ultrasound', 'ct', 'mammograph', 'pet', 'nuclear_medicine_image', 'angiogram', 'modality', 'kind', 'gastrointestinal']
+  fine_modality: ['noncontrast', 'contrast', 't1', 't2', 'flair', 't2_weighted', 't1_weighted', 'gi_contrast', 'iv_contrast', 'stir', 'dwi', 'barium_swallow', 'fiesta', 'angiography', 'venography', 'pdw']
+  organ: ['part', 'organ']
+  plane: ['plane']
+
+
+#* FULL PATHS TO FOLDERS AND FILES
+paths:
+  # Main folders in project tree
+  proj_dir: &proj_dir !projdir # Path to this project root directory
+  data_dir: &data_dir !joinpath [*proj_dir, data] # Data parent folder
+  logs_dir: !joinpath [*proj_dir, logs] # Logging files folder
+  tests_dir: !joinpath [*proj_dir, tests]
+  chkpts_dir: !joinpath [*proj_dir, checkpoints] # model checkpoints folder
+  notebooks_dir: !joinpath [*proj_dir, notebooks] # notebooks folder
+
+  # Datasets folders
+  raw_dir: &raw_dir !joinpath [*data_dir, raw]
+  clef_dir: &clef_dir !joinpath [*raw_dir, ImageCLEF]
+  slake_dir: &slake_dir !joinpath [*raw_dir, 'Slake1.0']
+  sysu_dir: &sysu_dir !joinpath [*raw_dir, SYSU]
+  vqa_rad_dir: &vqa_rad_dir !joinpath [*raw_dir, VQA_RAD]
+
+  # ImageCLEF dataset paths
+  ## VQA 2019 dataset
+  clef_19_train_imgs: !joinpath [*clef_dir, train_2019/Train_images]
+  clef_19_train_qa: !joinpath [*clef_dir, train_2019/All_QA_Pairs_train.txt]
+  clef_19_val_imgs: !joinpath [*clef_dir, val_2019/Val_images]
+  clef_19_val_qa: !joinpath [*clef_dir, val_2019/All_QA_Pairs_val.txt]
+  clef_19_test_imgs: !joinpath [*clef_dir, test_2019/VQAMed2019_Test_Images]
+  clef_19_test_qa: !joinpath [*clef_dir, test_2019/VQAMed2019_Test_Questions_w_Ref_Answers.txt]
+  ## VQA 2020 dataset
+  clef_20_train_imgs: !joinpath [*clef_dir, train_2020/VQAnswering_2020_Train_images]
+  clef_20_train_qa: !joinpath [*clef_dir, train_2020/VQAnswering_2020_Train_QA_pairs.txt]
+  clef_20_val_imgs: !joinpath [*clef_dir, val_2020/VQAnswering_2020_Val_images]
+  clef_20_val_qa: !joinpath [*clef_dir, val_2020/VQAnswering_2020_Val_QA_Pairs.txt]
+  clef_20_test_imgs: !joinpath [*clef_dir, test_2020/Task1-2020-VQAnswering-Test-Images]
+  clef_20_test_qa: !joinpath [*clef_dir, test_2020/Task1-2020-VQAnswering-Test-Questions.txt]
+  clef_20_test_qa_sysu: !joinpath [*clef_dir, test_2020/Task1-2020-VQAnswering-Test-Questions-Answers.csv]
+  ## VQA 2021 dataset
+  clef_21_val_imgs: !joinpath [*clef_dir, val_2021/ImageCLEF-2021-VQA-Med-New-Validation-Images]
+  clef_21_val_qa: !joinpath [*clef_dir, val_2021/VQA-Med-2021-VQAnswering-Task1-New-ValidationSet.txt]
+  clef_21_test_imgs: !joinpath [*clef_dir, test_2021/Task1-VQA-2021-TestSet-Images]
+  clef_21_test_qa: !joinpath [*clef_dir, test_2021/Task1-VQA-2021-TestSet-Questions.txt]
+  ## SYSU dataset path
+  clef_sysu_ltoc_filepath: !joinpath [*sysu_dir, id2disease.json]
+  clef_sysu_train_imgs: !joinpath [*sysu_dir, train/images]
+  clef_sysu_train_qa: !joinpath [*sysu_dir, train/Med_LT_train.txt]
+  clef_sysu_val_imgs: !joinpath [*sysu_dir, val/images]
+  clef_sysu_val_qa: !joinpath [*sysu_dir, val/Med_LT_val.txt]
+  
+
+  
